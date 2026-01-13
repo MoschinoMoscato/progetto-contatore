@@ -172,93 +172,89 @@
 
  <!-------------------------------------------------------------------- Contatore ------------------------------------------------------------------->
  <?php if($_GET["page"] === "contatore"): ?>
-
   <div class="contatore">
 
-  <?php
-  // controllo server C
-  if (!server_c_online()):
-  ?>
-      <p style="color:red; font-weight:bold;">
-          Server C non raggiungibile.<br>
-          Il contatore è disattivato.
-      </p>
-  <?php
-  else:
+   <?php if(!server_c_online()): ?>
+    <p style="color:red; font-weight:bold;"> Server C non raggiungibile.<br> Il contatore è disattivato. </p>
+    <?php
+     else:
       $xml = simplexml_load_file($fattura_corrente) or die("Errore XML");
-  ?>
+    ?>
 
-  <h2>Contatore articoli</h2>
+    <h2>Contatore articoli</h2>
 
-  <?php
-  // gestione + / -
-  if (isset($_POST["azione"], $_POST["codice"])) {
+    <?php if(isset($_POST["azione"], $_POST["codice"])) 
+    {
+     $codice = (int)$_POST["codice"];
+     $azione = $_POST["azione"]; // INC o DEC
 
-      $codice = (int)$_POST["codice"];
-      $azione = $_POST["azione"]; // INC o DEC
+     $resp = server_c_send("$azione $codice");
 
-      $resp = server_c_send("$azione $codice");
+     if($resp && str_starts_with($resp, "OK")) 
+     {
+      foreach($xml->Articoli->Articolo as $art) 
+      {
+       if((int)$art->Codice === $codice) 
+       {
+        if($azione === "INC") 
+        {
+         $art->Quantita = (int)$art->Quantita + 1;
+        } 
+        else 
+        {
+         $art->Quantita = max(0, (int)$art->Quantita - 1);
+        }
 
-      if ($resp && str_starts_with($resp, "OK")) {
-
-          foreach ($xml->Articoli->Articolo as $art) {
-              if ((int)$art->Codice === $codice) {
-
-                  if ($azione === "INC") {
-                      $art->Quantita = (int)$art->Quantita + 1;
-                  } else {
-                      $art->Quantita = max(0, (int)$art->Quantita - 1);
-                  }
-
-                  $art->PrezzoTotale = $art->Quantita * $art->PrezzoUnitario;
-                  break;
-              }
-          }
-
-          $xml->asXML($fattura_corrente);
-
-          $dom = new DOMDocument("1.0", "UTF-8");
-          $dom->preserveWhiteSpace = false;
-          $dom->formatOutput = true;
-          $dom->load($fattura_corrente);
-          $dom->save($fattura_corrente);
+        $art->PrezzoTotale = $art->Quantita * $art->PrezzoUnitario;
+        break;
+       }
       }
-  }
-  ?>
 
-  <table class="tabella">
+      $xml->asXML($fattura_corrente);
+
+      $dom = new DOMDocument("1.0", "UTF-8");
+      $dom->preserveWhiteSpace = false;
+      $dom->formatOutput = true;
+      $dom->load($fattura_corrente);
+      $dom->save($fattura_corrente);
+     }
+    }
+    ?>
+
+    <table class="tabella">
+     <tr>
+      <th>Codice</th>
+      <th>Descrizione</th>
+      <th>Quantità</th>
+      <th>Prezzo unitario</th>
+      <th>Prezzo totale</th>
+      <th>Azioni</th>
+     </tr>
+
+     <?php foreach ($xml->Articoli->Articolo as $art): ?>
       <tr>
-          <th>Codice</th>
-          <th>Descrizione</th>
-          <th>Quantità</th>
-          <th>Prezzo unitario</th>
-          <th>Prezzo totale</th>
-          <th>Azioni</th>
+       <td><?= $art->Codice ?></td>
+       <td><?= htmlspecialchars($art->Descrizione) ?></td>
+       <td><?= $art->Quantita ?></td>
+       <td><?= $art->PrezzoUnitario ?> €</td>
+       <td><?= $art->PrezzoTotale ?> €</td>
+       
+       <td>
+        <form method="post" style="display:inline">
+         <input type="hidden" name="codice" value="<?= $art->Codice ?>">
+         <button type="submit" name="azione" value="INC">+</button>
+        </form>
+
+        <form method="post" style="display:inline">
+         <input type="hidden" name="codice" value="<?= $art->Codice ?>">
+         <button type="submit" name="azione" value="DEC">−</button>
+        </form>
+        </td>
       </tr>
+     <?php endforeach; ?>
+    </table>
 
-      <?php foreach ($xml->Articoli->Articolo as $art): ?>
-          <tr>
-              <td><?= $art->Codice ?></td>
-              <td><?= htmlspecialchars($art->Descrizione) ?></td>
-              <td><?= $art->Quantita ?></td>
-              <td><?= $art->PrezzoUnitario ?> €</td>
-              <td><?= $art->PrezzoTotale ?> €</td>
-              <td>
-                  <form method="post" style="display:inline">
-                      <input type="hidden" name="codice" value="<?= $art->Codice ?>">
-                      <button type="submit" name="azione" value="INC">+</button>
-                  </form>
-
-                  <form method="post" style="display:inline">
-                      <input type="hidden" name="codice" value="<?= $art->Codice ?>">
-                      <button type="submit" name="azione" value="DEC">−</button>
-                  </form>
-              </td>
-          </tr>
-      <?php endforeach; ?>
-  </table>
-
-  <?php endif; ?>
+   <?php endif; ?>
 
   </div>
  <?php endif; ?>

@@ -8,20 +8,21 @@
  </footer>
 
  <script>
- document.addEventListener("DOMContentLoaded", () => 
- {
+  document.addEventListener("DOMContentLoaded", () => 
+  {
    const content = document.querySelector(".content");
    if(!content) return;
 
    // Ripristino scroll
    const saved = sessionStorage.getItem("contentScrollTop");
+   
    if(saved !== null) 
    {
-     requestAnimationFrame(() => 
-     {
-       content.scrollTop = parseInt(saved, 10);
-       sessionStorage.removeItem("contentScrollTop");
-     });
+    requestAnimationFrame(() => 
+    {
+     content.scrollTop = parseInt(saved, 10);
+     sessionStorage.removeItem("contentScrollTop");
+    });
    }
 
    // Salvataggio scroll prima del submit (solo form dentro .content)
@@ -32,7 +33,7 @@
     sessionStorage.setItem("contentScrollTop", content.scrollTop);
     });
    });
- });
+  });
  </script>
 
 </div>
