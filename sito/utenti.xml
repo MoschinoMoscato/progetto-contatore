@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Utenti>
+  <Utente>
+    <Email>moscaleonardo2007@gmail.com</Email>
+    <Nome>Leonardo</Nome>
+    <Cognome>Mosca</Cognome>
+    <Password>$2y$10$pWc3k5QlCTKAYtmp9mN0gOgBRZNKwJwbcp/590XyhHA3cd9YNX2N2</Password>
+    <FileFattura>moscaleonardo2007_gmail_com.xml</FileFattura>
+    <Colore>#8F9F43</Colore>
+  </Utente>
+</Utenti>
